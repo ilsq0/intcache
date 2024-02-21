@@ -33,25 +33,11 @@ func (c *Cache) Init(cleanupInterval time.Duration, onEvicted func(any, int)) {
 	go c.loopClean()
 }
 
-func (c *Cache) IncrFlowWindow(key string, dur time.Duration) int {
-	if val, ok := c.items.Load(key); ok {
-		if item, ok := val.(*item); ok && item != nil {
-			item.mu.Lock()
-			defer item.mu.Unlock()
-			item.count++
-			item.expireAt = time.Now().Add(dur)
-			return item.count
-		}
-	}
-	c.items.Store(key, &item{expireAt: time.Now().Add(dur), count: 1})
-	return 1
-}
-
 func (c *Cache) Stop() {
 	c.stop <- true
 }
 
-func (c *Cache) IncrFixedWindow(key string, dur time.Duration) int {
+func (c *Cache) Incr(key string, dur time.Duration) int {
 	if val, ok := c.items.Load(key); ok {
 		if it, ok := val.(*item); ok && it != nil {
 			it.mu.Lock()
